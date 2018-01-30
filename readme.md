@@ -1,3 +1,3 @@
-# Redux Bare Bones
+# redux-forms-unsaved-changes-prompt
 
-A minimal React Redux template for building example projects.
+Proof of concept component that adds a prompt to the user when navigating away from a dirty form.
