@@ -1,56 +1,46 @@
-import React from 'react'
 import { withRouter } from 'react-router'
+import { lifecycle, compose } from 'recompose'
 
 const DEFAULT_MESSAGE = 'Changes you made may not be saved.'
 
 export default (formName, message) => WrappedComponent => {
-  class UnsavedChangesPrompt extends React.Component {
-    constructor (props) {
-      super(props)
-      this.onBrowserUnload = this.onBrowserUnload.bind(this)
-    }
+  let unblock
 
-    onBrowserUnload (event) {
-      event.returnValue = message || DEFAULT_MESSAGE
-    }
+  const onBrowserUnload = event => (event.returnValue = message || DEFAULT_MESSAGE)
 
-    enable () {
-      if (this.unblock) this.unblock()
-      this.unblock = this.props.history.block(message || DEFAULT_MESSAGE)
-      window.addEventListener('beforeunload', this.onBrowserUnload)
-    }
+  const enable = history => {
+    if (unblock) unblock()
+    unblock = history.block(message || DEFAULT_MESSAGE)
+    window.addEventListener('beforeunload', onBrowserUnload)
+  }
 
-    disable () {
-      if (this.unblock) {
-        this.unblock()
-        this.unblock = null
-      }
-      window.removeEventListener('beforeunload', this.onBrowserUnload)
+  const disable = () => {
+    if (unblock) {
+      unblock()
+      unblock = null
     }
+    window.removeEventListener('beforeunload', onBrowserUnload)
+  }
 
-    update () {
-      if (this.props.dirty) {
-        this.enable()
-      } else {
-        this.disable()
-      }
-    }
-
-    componentDidMount () {
-      this.update()
-    }
-
-    componentDidUpdate () {
-      this.update()
-    }
-
-    componentWillUnmount () {
-      this.disable()
-    }
-
-    render () {
-      return <WrappedComponent {...this.props} />
+  const update = ({dirty, history}) => {
+    if (dirty) {
+      enable(history)
+    } else {
+      disable()
     }
   }
-  return withRouter(UnsavedChangesPrompt)
+
+  const lifecycleHandlers = {
+    componentDidMount () {
+      update(this.props)
+    },
+    componentDidUpdate () {
+      update(this.props)
+    },
+    componentWillUnmount () {
+      disable()
+    }
+  }
+
+  return compose(withRouter, lifecycle(lifecycleHandlers))(WrappedComponent)
 }
