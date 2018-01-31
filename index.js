@@ -6,7 +6,7 @@ import { Provider, connect } from 'react-redux'
 import logger from 'redux-logger'
 import ContactPage from './src/ContactPage'
 import { reducer as formReducer } from 'redux-form'
-import { BrowserRouter as Router, Route, Link } from 'react-router-dom'
+import { HashRouter as Router, Route } from 'react-router-dom'
 
 /*
  * Redux
@@ -31,18 +31,23 @@ const reducer = combineReducers({
 })
 
 const store = createStore(
-  reducer,
-  applyMiddleware(logger)
+  reducer//, 
+  // applyMiddleware(logger)
 )
 
 /*
  * React + Redux
  */
 
+const TestPage = () => <h1>Test Page</h1>
+
 reactDom.render(
   <Router>
     <Provider store={store}>
-      <ContactPage />
+      <div>
+        <Route exact path='/' component={ContactPage} />
+        <Route path='/test' component={TestPage} />
+      </div>
     </Provider>
   </Router>,
   document.getElementById('app')

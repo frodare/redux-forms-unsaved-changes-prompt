@@ -1,12 +1,12 @@
 import React from 'react'
 import { Field, reduxForm } from 'redux-form'
-import { withRouter } from 'react-router-dom'
+import unsavedPrompt from './unsavedChangesPrompt'
+import { compose } from 'recompose'
 
 export const NAME = 'contact'
 
 let ContactForm = props => {
   const { handleSubmit } = props
-  console.log(props)
   return (
     <form onSubmit={handleSubmit}>
       <div>
@@ -26,10 +26,9 @@ let ContactForm = props => {
   )
 }
 
-ContactForm = withRouter(ContactForm)
+const enhance = compose(
+  reduxForm({form: NAME}),
+  unsavedPrompt(NAME, 'Some message here!')
+)
 
-ContactForm = reduxForm({
-  form: NAME
-})(ContactForm)
-
-export default ContactForm
+export default enhance(ContactForm)
